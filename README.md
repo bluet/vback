@@ -1,61 +1,60 @@
-# volume-backup
+# vback
 
-An utility to backup and restore [docker volumes](https://docs.docker.com/engine/reference/commandline/volume/). 
+Backup your Docker Volumes
+
+- Fast and clean.
+- Archive whole volume into one file.
+- Gzip in Parallel, with progress bar.
+
+See usage: `docker run bluet/vback`
+
 
 **Note**: Make sure no container is using the volume before backup or restore, otherwise your data might be damaged.
 
-## Backup
+## Syntax
 
-Syntax:
+`docker run [options] [volumes] bluet/vback <action> file`
 
-    docker run -v [volume-name]:/volume -v [output-dir]:/backup --rm loomchild/volume-backup backup [archive-name]
+### Backup / Restore volume to/from File
 
-For example:
+Use `-it` to see progress bar.
 
-    docker run -v some_volume:/volume -v /tmp:/backup --rm loomchild/volume-backup backup some_archive
+```
+docker run [-it] -v [source-volume-name]:/volume -v [archive-dir]:/backup --rm bluet/vback backup [archive-name]
+docker run [-it] -v [target-volume-name]:/volume -v [archive-dir]:/backup --rm bluet/vback restore [archive-name]
+```
 
-will archive volume named `some_volume` to `/tmp/some_archive.tar.bz2` archive file.
+Example:
 
-### Backup to standard output
+Backup all data in volume *docker_dbdata*, save the archive file *dbsata.tar.gz* into *./backup/*.
+  - `docker run -it -v docker_dbdata:/volume -v $PWD/backup:/backup --rm bluet/vback backup dbdata`
 
-This avoids mounting a second backup volume and allows to redirect it to a file, network, etc.
+Restore data from archive file */data/backup/dbsata.tar.gz* to volume *drsite_dbdata*.
+  - **Note**: This operation will delete all contents of the volume
+  - `docker run -it -v drsite_dbdata:/volume -v /data/backup:/backup --rm bluet/vback restore dbdata`
 
-Syntax:
 
-    docker run -v [volume-name]:/volume --rm loomchild/volume-backup backup - > [archive-name]
+### Backup / Restore volume to/from standard input/output (STDIO)
 
-For example:
+With STDIO support, you can pipe or redirect raw data stream of archive file to next program, any new file, or even send over network.
 
-    docker run -v some_volume:/volume --rm loomchild/volume-backup backup - > some_archive.tar.bz2
+Must at least use `-i` to interact with process pipe.
 
-will archive volume named `some_volume` to `some_archive.tar.bz2` archive file.
+    docker run -it -v [source-volume-name]:/volume --rm bluet/vback backup - > [archive-filename]
+    cat [archive-filename] | docker run -it -v [target-volume-name]:/volume --rm bluet/vback restore -
 
-## Restore
+Example:
 
-**Note**: This operation will delete all contents of the volume
+Avoids mounting a second backup volume.
+  - `docker run -v docker_dbdata:/volume --rm bluet/vback backup - > dbdata.tar.gz`
+  - `cat dbdata.tar.gz | docker run -i -v drsite_dbdata:/volume --rm bluet/vback restore -`
 
-Syntax:
+Or, even send to remote over network
+  - (local) $ `docker run -v local_data:/volume --rm bluet/vback backup - | nc ...`
+  - (remote) $ `nc ... | docker run -v imported_data:/volume --rm bluet/vback restore -`
 
-    docker run -v [volume-name]:/volume -v [output-dir]:/backup --rm loomchild/volume-backup restore [archive-name]
 
-For example:
 
-    docker run -v some_volume:/volume -v /tmp:/backup --rm loomchild/volume-backup restore some_archive
+## Credit
 
-will clean and restore volume named `some_volume` from `/tmp/some_archive.tar.bz2` archive file.
-
-### Restore from standard input
-
-This avoids mounting a second backup volume.
-
-**Note**: Don't forget the `-i` switch for interactive operation.
-
-Syntax:
-
-    cat [archive-name] | docker run -i -v [volume-name]:/volume --rm loomchild/volume-backup restore -
-
-For example:
-
-    cat some_archive.tar.bz2 | docker run -i -v some_volume:/volume --rm loomchild/volume-backup restore -
-
-will clean and restore volume named `some_volume` from `some_archive.tar.bz2` archive file.
+This is an improved version of [loomchild's volume-backup](https://github.com/loomchild/volume-backup) utility to backup and restore [docker volumes](https://docs.docker.com/engine/reference/commandline/volume/). 
