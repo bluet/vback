@@ -1,5 +1,7 @@
 FROM alpine
 
-COPY volume-backup.sh /
+RUN apk add --no-cache pigz pv
 
-ENTRYPOINT [ "/bin/sh", "/volume-backup.sh" ]
+COPY vback /
+
+ENTRYPOINT [ "/bin/sh", "/vback" ]

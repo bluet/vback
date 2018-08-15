@@ -1,0 +1,69 @@
+#!/bin/sh
+
+usage() {
+    echo "Backup your Docker Volumes"
+    echo ""
+    echo "Usage: docker run [volumes] bluet/vback <action> file"
+    # must have -it to see progress bar
+    echo "Usage: docker run -it -v [source-volume-name]:/volume -v [archive-dir]:/backup --rm bluet/vback backup [archive-name]"
+    echo "Usage: docker run -it -v [target-volume-name]:/volume -v [archive-dir]:/backup --rm bluet/vback restore [archive-name]"
+    echo ""
+    echo "Example:"
+    echo "docker run -it -v docker_dbdata:/volume -v \$PWD/backup:/backup --rm bluet/vback backup dbdata"
+    echo "docker run -it -v drsite_dbdata:/volume -v /data/backup:/backup --rm bluet/vback restore dbdata"
+    exit
+}
+
+backup() {
+    if ! [ "$ARCHIVE" == "-" ]; then
+        mkdir -p `dirname /backup/$ARCHIVE`
+    fi
+
+    # busybox du does not support -b
+    tar cf - /volume | pv -s $(du -sk /volume | awk '{print $1*1024}') | pigz > $ARCHIVE_PATH
+}
+
+restore() {
+    if ! [ "$ARCHIVE" == "-" ]; then
+        if ! [ -e $ARCHIVE_PATH ]; then
+            echo "Archive file $ARCHIVE does not exist"
+            exit 1
+        fi
+    fi
+
+    echo "Cleanup volume content..."
+    rm -rf /volume/* /volume/..?* /volume/.[!.]*
+    echo "Restoring from backup file."
+    pv $ARCHIVE_PATH | tar xzf - -C /volume/
+}
+
+# Needed because sometimes pty is not ready when executing docker-compose run
+# See https://github.com/docker/compose/pull/4738 for more details
+# TODO: remove after above pull request or equivalent is merged
+sleep 0.1
+
+if [ $# -ne 2 ]; then
+    usage
+fi
+
+OPERATION=$1
+
+if [ "$2" == "-" ]; then
+    ARCHIVE=$2
+    ARCHIVE_PATH=$ARCHIVE
+else
+    ARCHIVE=${2%%.tar.gz}.tar.gz
+    ARCHIVE_PATH=/backup/$ARCHIVE
+fi
+
+case "$OPERATION" in
+    "backup" )
+        backup
+        ;;
+    "restore" )
+        restore
+        ;;
+    * )
+        usage
+        ;;
+esac
