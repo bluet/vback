@@ -20,7 +20,7 @@ backup() {
     fi
 
     # busybox du does not support -b
-    tar cf - /volume | pv -s $(du -sk /volume | awk '{print $1*1024}') | pigz > $ARCHIVE_PATH
+    tar cf - ./ -C /volume | pv -s $(du -sk /volume | awk '{print $1*1024}') | pigz > $ARCHIVE_PATH
 }
 
 restore() {
