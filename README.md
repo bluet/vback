@@ -1,5 +1,6 @@
 [![Open Source Helpers](https://www.codetriage.com/bluet/vback/badges/users.svg)](https://www.codetriage.com/bluet/vback)
 [![GitHub license](https://img.shields.io/github/license/BlueT/vback.svg)](https://github.com/BlueT/vback/blob/master/LICENSE)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbluet%2Fvback.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbluet%2Fvback?ref=badge_shield)
 
 
 # vback
@@ -62,3 +63,7 @@ Or, even send to remote over network
 ## Credit
 
 This is an improved version of [loomchild's volume-backup](https://github.com/loomchild/volume-backup) utility to backup and restore [docker volumes](https://docs.docker.com/engine/reference/commandline/volume/). 
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbluet%2Fvback.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbluet%2Fvback?ref=badge_large)
