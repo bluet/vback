@@ -18,7 +18,7 @@ docker buildx create --use
 while true; do
         read -p "Have I Updated VERSION Info? (Is current VERSION=${VERSION} ?) [y/N]" yn
         case $yn in
-                [Yy]* ) docker buildx build -t bluet/vback:latest -t bluet/vback:${VERSION} --platform linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x,linux/riscv64 --push .; break;;
+                [Yy]* ) docker buildx build -t bluet/vback:latest -t bluet/vback:${VERSION} --platform linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x,linux/riscv64 --pull --push .; break;;
                 [Nn]* ) exit;;
                 * ) echo "";;
         esac
