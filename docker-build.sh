@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=1.0.2
+VERSION=1.0.3
 
 docker build --pull -t bluet/vback .
 docker scan bluet/vback:latest
